@@ -1,0 +1,5 @@
+host = "localhost"
+port = 8080
+# poll interval in seconds:
+poll_interval = 1
+default_room_id = 0
