@@ -1,2 +1,3 @@
 # chat-client
-Chat client for server https://github.com/SpiritOfWill/chat-server
+
+Console chat client for server https://github.com/SpiritOfWill/chat-server

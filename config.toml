@@ -1,5 +1,6 @@
 host = "localhost"
 port = 8080
+max_chunk_size = 1000000
 # poll interval in seconds:
 poll_interval = 1
 default_room_id = 0
