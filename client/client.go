@@ -172,9 +172,17 @@ func SendMessage(roomID int, message string) (err error) {
 
 func sendMessage(roomID int, message, file string) (err error) {
 	urlPostfix := fmt.Sprintf("%s/%d%s", roomURL, roomID, messageURL)
+	m := newMessageType{
+		Text: message,
+		File: file,
+	}
 
-	// TODO: add json marshaling newMessageType:
-	data := fmt.Sprintf(`{"text":"%s","file":"%s"}`, message, file)
+	data, err := json.Marshal(m)
+	if err != nil {
+		err = fmt.Errorf("failed to create json: %s", err)
+		return
+	}
+	// data := fmt.Sprintf(`{"text":"%s","file":"%s"}`, message, file)
 
 	err = request("POST", urlPostfix, jsonHeader, []byte(data), nil)
 	if err != nil {
