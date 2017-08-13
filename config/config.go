@@ -17,6 +17,7 @@ type Type struct {
 	Poll         time.Duration `default:"1" toml:"poll_interval"`
 	LogPath      string        `toml:"log_path"`
 	DefaultRoom  int           `default:"0" toml:"default_room"`
+	APIversion   string        `default:"1.0" toml:"api_version"`
 }
 
 // Conf - global config

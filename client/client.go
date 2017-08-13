@@ -289,7 +289,7 @@ func uploadChunk(data []byte, fileID string, from, total int64) (err error) {
 }
 
 func init() {
-	urlPrefix = fmt.Sprintf("http://%s:%d", config.Conf.Host, config.Conf.Port)
+	urlPrefix = fmt.Sprintf("http://%s:%d/api/%s", config.Conf.Host, config.Conf.Port, config.Conf.APIversion)
 	jsonHeader = map[string]string{"Content-Type": "application/json"}
 
 	// if config.Conf.LogPath != "" {
