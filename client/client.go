@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -72,7 +73,7 @@ func requestRaw(method, url string, headers map[string]string, r io.Reader, i in
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
 	}
-
+	log.Println("response Body:", string(body))
 	if i != nil {
 		err := json.Unmarshal(body, i)
 		if err != nil {
@@ -218,7 +219,7 @@ func UploadFile(roomID int, filePath string) error {
 		return fmt.Errorf("failed to upload chunks of file(%s): %s", filePath, err)
 	}
 
-	err = sendMessage(roomID, fmt.Sprintf("I have sended file: %s", filepath.Base(filePath)), fileID)
+	err = sendMessage(roomID, fmt.Sprintf("I have sent file: %s", filepath.Base(filePath)), fileID)
 	if err != nil {
 		return err
 	}
