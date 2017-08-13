@@ -68,7 +68,11 @@ func requestRaw(method, url string, headers map[string]string, r io.Reader, i in
 	// TODO: add resp.Status checking
 	// log.Println("response Status:", resp.Status)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read body: %s", err)
+	}
+
 	if i != nil {
 		err := json.Unmarshal(body, i)
 		if err != nil {
@@ -90,7 +94,7 @@ func GetRoom(roomID int) (room *RoomType, err error) {
 
 	err = request("GET", urlPostfix, jsonHeader, emptyByte, room)
 	if err != nil {
-		err = fmt.Errorf("failed to get room(s): %s", err)
+		err = fmt.Errorf("failed to get room(%d): %s", roomID, err)
 		return
 	}
 	return
@@ -142,16 +146,16 @@ func Subscribe(roomID int) (err error) {
 
 		room, err := GetRoom(roomID)
 		if err != nil {
-			return fmt.Errorf("failed to get room(%d): %s", roomID, err)
+			return err
 		}
 
 		if room.LastMessageID > lastSeenMessageID {
 			fmt.Printf("You have %d new message(s):\n", room.LastMessageID-lastSeenMessageID)
-			messages, err := GetMessages(roomID, lastSeenMessageID+1)
+			_, err := GetMessages(roomID, lastSeenMessageID+1)
 			if err != nil {
 				return fmt.Errorf("failed to get messages from room(%d): %s", roomID, err)
 			}
-			lastSeenMessageID = getLatestMessageID(messages)
+			lastSeenMessageID = room.LastMessageID
 		}
 	}
 }
