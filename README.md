@@ -17,8 +17,5 @@ Usage of ./chat-client:
   -s	Subscribe to messages (default true)
 ```
 
-## Roadmap
-Add HTTP response codes checking(400, 404, 500, ...).
-
 ## OS support
 Was tested only on MacOS.
