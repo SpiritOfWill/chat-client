@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -30,7 +29,6 @@ var jsonHeader map[string]string
 type RoomType struct {
 	Name          string `json:"name"`
 	LastMessageID int64  `json:"last_message_id"`
-	// Messages      MessagesType `json:"-"`
 }
 
 // RoomsType - rooms type
@@ -52,7 +50,7 @@ type newMessageType struct {
 	File string `json:"file,omitempty"`
 }
 
-func requestRaw(method, url string, headers map[string]string, r io.Reader, i interface{}) error {
+func requestRaw(method, url string, headers map[string]string, r io.Reader, i interface{}, status int) error {
 	fullURL := urlPrefix + url
 	req, _ := http.NewRequest(method, fullURL, r)
 
@@ -66,14 +64,16 @@ func requestRaw(method, url string, headers map[string]string, r io.Reader, i in
 		return fmt.Errorf("failed to make %s request to %s: %s", method, fullURL, err)
 	}
 	defer resp.Body.Close()
-	// TODO: add resp.Status checking
-	// log.Println("response Status:", resp.Status)
+
+	if status != 0 && status != resp.StatusCode {
+		return fmt.Errorf("wrong response status code, want(%d), was(%d)", status, resp.StatusCode)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
 	}
-	log.Println("response Body:", string(body))
+	// log.Println("response Body:", string(body))
 	if i != nil {
 		err := json.Unmarshal(body, i)
 		if err != nil {
@@ -83,9 +83,9 @@ func requestRaw(method, url string, headers map[string]string, r io.Reader, i in
 	return nil
 }
 
-func request(method, url string, headers map[string]string, data []byte, i interface{}) (err error) {
+func request(method, url string, headers map[string]string, data []byte, i interface{}, status int) (err error) {
 	r := bytes.NewBuffer(data)
-	return requestRaw(method, url, headers, r, i)
+	return requestRaw(method, url, headers, r, i, status)
 }
 
 // GetRoom - get room
@@ -93,7 +93,7 @@ func GetRoom(roomID int) (room *RoomType, err error) {
 	urlPostfix := fmt.Sprintf("%s/%d", roomURL, roomID)
 	room = &RoomType{}
 
-	err = request("GET", urlPostfix, jsonHeader, emptyByte, room)
+	err = request("GET", urlPostfix, jsonHeader, emptyByte, room, http.StatusOK)
 	if err != nil {
 		err = fmt.Errorf("failed to get room(%d): %s", roomID, err)
 		return
@@ -108,7 +108,7 @@ func GetMessages(roomID int, fromMessageID int64) (messages *MessagesType, err e
 	}
 	urlPostfix := fmt.Sprintf("%s/%d%s?from=%d", roomURL, roomID, messageURL, fromMessageID)
 	messages = &MessagesType{}
-	err = request("GET", urlPostfix, jsonHeader, emptyByte, messages)
+	err = request("GET", urlPostfix, jsonHeader, emptyByte, messages, http.StatusOK)
 	if err != nil {
 		err = fmt.Errorf("failed to get messages: %s", err)
 		return
@@ -183,9 +183,8 @@ func sendMessage(roomID int, message, file string) (err error) {
 		err = fmt.Errorf("failed to create json: %s", err)
 		return
 	}
-	// data := fmt.Sprintf(`{"text":"%s","file":"%s"}`, message, file)
 
-	err = request("POST", urlPostfix, jsonHeader, []byte(data), nil)
+	err = request("POST", urlPostfix, jsonHeader, []byte(data), nil, http.StatusCreated)
 	if err != nil {
 		err = fmt.Errorf("failed to send message: %s", err)
 		return
@@ -198,7 +197,7 @@ func getFileID() (fileID string, err error) {
 		ID string `json:"id"`
 	}
 	response := &responseType{}
-	err = request("GET", fileIDURL, jsonHeader, emptyByte, response)
+	err = request("GET", fileIDURL, jsonHeader, emptyByte, response, http.StatusCreated)
 	if err != nil {
 		err = fmt.Errorf("failed to get ID: %s", err)
 		return
@@ -282,7 +281,7 @@ func uploadChunk(data []byte, fileID string, from, total int64) (err error) {
 		"Content-Type":  "application/octet-stream",
 		"Content-Range": contentRange,
 	}
-	err = request("POST", urlPostfix, headers, data, nil)
+	err = request("POST", urlPostfix, headers, data, nil, http.StatusOK)
 	if err != nil {
 		return
 	}
