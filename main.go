@@ -1,28 +1,42 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"os"
 
 	"github.com/SpiritOfWill/chat-client/client"
+	"github.com/SpiritOfWill/chat-client/config"
 )
 
 const roomID = 0
 
 func main() {
-	// client.GetRoom(-1)
+	var r = flag.Int("r", config.Conf.DefaultRoom, "Set room ID")
+	var a = flag.String("a", "", "Add new message")
+	var f = flag.String("f", "", "Path to file for upload")
+	var s = flag.Bool("s", true, "Subscribe to messages")
 
-	// if err := client.GetMessages(0, 0); err != nil {
-	// 	log.Fatalf("error: %s", err)
-	// }
+	flag.Parse()
 
-	// if err := client.SendMessage(0, "Buy cheese and bread for breakfast.", ""); err != nil {
-	// 	log.Fatalf("error: %s", err)
-	// }
+	if *a != "" {
+		if err := client.SendMessage(*r, *a); err != nil {
+			log.Fatalf("error: %s", err)
+		}
+		os.Exit(0)
+	}
 
-	// client.GetRoom(roomID)
+	if *f != "" {
+		if err := client.UploadFile(*r, *f); err != nil {
+			log.Fatalf("error: %s", err)
+		}
+		os.Exit(0)
+	}
 
-	// if err := client.UploadFile(0, "/Users/will/benchmark.bin", "13b33f89-4832-4030-9c75-c7ebc1eaa6ad"); err != nil {
-	if err := client.UploadFile(0, "/Users/will/10MB.bin", "13b33f89-4832-4030-9c75-c7ebc1eaa6ad"); err != nil {
-		log.Fatalf("error: %s", err)
+	if *s {
+		err := client.Subscribe(*r)
+		if err != nil {
+			log.Fatalf("error: %s", err)
+		}
 	}
 }
