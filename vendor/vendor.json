@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "8KXp5EQbWPb7fbLYxGKM14NjpFA=",
+			"path": "github.com/BurntSushi/toml",
+			"revision": "d94612f9fc140360834f9742158c70b5c5b5535b",
+			"revisionTime": "2017-03-18T20:29:13Z"
+		}
+	],
+	"rootPath": "github.com/SpiritOfWill/chat-client"
+}
